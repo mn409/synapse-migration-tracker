@@ -10,9 +10,7 @@ Built to demonstrate end-to-end PM thinking on a real Microsoft deprecation scen
 
 ## Why I built this
 
-At Accenture, I worked on data operations supporting enterprise clients running complex pipelines on cloud platforms. A lot of time was spent figuring out *which* customers were at risk, *when* to escalate, and *how* to communicate changes — all manually, without a clear system.
-
-When I started preparing for the Azure Data PM role at Microsoft, I realised the Synapse → Fabric migration problem is essentially the same challenge at 100x scale. I built this to think through the problem properly — not just as a portfolio piece but as something I'd actually want to use if I were doing this job.
+Synapse → Fabric migration problem is essentially the same challenge at 100x scale. I built this to think through the problem properly — not just as a portfolio piece but as something I'd actually want to use if I were doing this job.
 
 ---
 
