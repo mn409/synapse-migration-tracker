@@ -10,8 +10,7 @@ Built to demonstrate end-to-end PM thinking on a real Microsoft deprecation scen
 
 ## Why I built this
 
-Synapse → Fabric migration problem is essentially the same challenge at 100x scale. I built this to think through the problem properly — not just as a portfolio piece but as something I'd actually want to use if I were doing this job.
-
+Synapse → Fabric migration problem is essentially the same challenge at 100x scale. I built this to think through the problem properly — not just as a conceptual exercise but as something operationally useful.
 ---
 
 ## What the tool does
@@ -109,9 +108,3 @@ All tenant data in the demo is synthetic. Org names, tenant IDs, API call volume
 ```
 
 ---
-
-## Context
-
-This is a side project I built while preparing for a Product Manager role on the Azure Data team at Microsoft. The JD described a PM role managing the Synapse Analytics deprecation — specifically: customer outreach, telemetry-driven identification of active users, playbook development, and communication management.
-
-I've been using Azure at work (Accenture) for about a year, primarily for operations monitoring and incident resolution. This project pushed me to go deeper on Azure Monitor, KQL syntax, and how deprecation programs actually work at cloud scale.
