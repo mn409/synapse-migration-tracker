@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Azure Synapse Migration — Status Report — June 2025</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --blue: #0078d4;
+    --blue-light: #e8f3fb;
+    --blue-mid: #c7e0f4;
+    --text: #1a1a1a;
+    --text-muted: #444;
+    --text-light: #6b7280;
+    --border: #d1d5db;
+    --surface: #f8fafc;
+    --green: #107c10;
+    --green-bg: #e6f2e6;
+    --red: #a4262c;
+    --red-bg: #fde8e9;
+    --yellow: #7a5c0a;
+    --yellow-bg: #fef3c7;
+    --gray-bg: #f1f3f5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #e8e8e8;
+    color: var(--text);
+    font-size: 9.5pt;
+    line-height: 1.55;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page {
+    background: #fff;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 24px auto;
+    padding: 18mm 20mm 16mm 20mm;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    position: relative;
+  }
+
+  /* ── HEADER ── */
+  .doc-header {
+    border-bottom: 2.5px solid var(--blue);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+  .doc-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .doc-service {
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--blue);
+    letter-spacing: 0.2px;
+    margin-bottom: 2px;
+  }
+  .doc-title {
+    font-size: 16pt;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .doc-subtitle {
+    font-size: 9pt;
+    color: var(--text-light);
+    margin-top: 3px;
+  }
+  .doc-meta {
+    text-align: right;
+  }
+  .doc-meta-date {
+    font-size: 9pt;
+    color: var(--text-light);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 4px;
+  }
+  .status-badge {
+    display: inline-block;
+    background: var(--blue);
+    color: #fff;
+    font-size: 8pt;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 3px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin-bottom: 15px;
+  }
+  .section-label {
+    font-size: 7.5pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--blue);
+    border-bottom: 1px solid var(--blue-mid);
+    padding-bottom: 4px;
+    margin-bottom: 9px;
+  }
+
+  /* ── EXEC SUMMARY ── */
+  .exec-summary {
+    background: var(--blue-light);
+    border-left: 3px solid var(--blue);
+    padding: 10px 14px;
+    font-size: 9pt;
+    color: var(--text-muted);
+    line-height: 1.65;
+    border-radius: 0 3px 3px 0;
+  }
+
+  /* ── KPI BAR ── */
+  .kpi-bar {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .kpi-item {
+    flex: 1;
+    padding: 8px 10px;
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+  .kpi-item:last-child { border-right: none; }
+  .kpi-val {
+    font-size: 15pt;
+    font-weight: 600;
+    line-height: 1.1;
+    margin-bottom: 2px;
+  }
+  .kpi-lbl {
+    font-size: 7pt;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ── TIER BARS ── */
+  .tier-table { width: 100%; margin-bottom: 2px; }
+  .tier-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .tier-name {
+    width: 70px;
+    font-size: 8.5pt;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+    flex-shrink: 0;
+  }
+  .tier-track {
+    flex: 1;
+    height: 14px;
+    background: var(--gray-bg);
+    border-radius: 2px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .tier-fill {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 6px;
+  }
+  .tier-pct {
+    font-size: 7.5pt;
+    font-weight: 600;
+    color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ── REGION TABLE ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+  }
+  .data-table th {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 5px 8px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .data-table td {
+    border: 1px solid var(--border);
+    padding: 5px 8px;
+    color: var(--text-muted);
+    vertical-align: middle;
+  }
+  .data-table tr:nth-child(even) td { background: var(--surface); }
+  .mono { font-family: 'IBM Plex Mono', monospace; font-size: 8pt; }
+
+  .badge-sm {
+    display: inline-block;
+    padding: 1.5px 6px;
+    border-radius: 3px;
+    font-size: 7pt;
+    font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.3px;
+  }
+  .badge-green { background: var(--green-bg); color: var(--green); }
+  .badge-yellow { background: var(--yellow-bg); color: var(--yellow); }
+  .badge-red { background: var(--red-bg); color: var(--red); }
+  .badge-blue { background: var(--blue-light); color: var(--blue); }
+
+  /* ── PAGE 2 HEADER ── */
+  .page2-header {
+    border-bottom: 2px solid var(--blue);
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .page2-title {
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--blue);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .page2-sub {
+    font-size: 8pt;
+    color: var(--text-light);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ── TIMELINE ── */
+  .timeline-wrap {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    margin-bottom: 4px;
+  }
+  .tl-phase {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-right: none;
+    padding: 8px 9px;
+    font-size: 8pt;
+    position: relative;
+  }
+  .tl-phase:last-child { border-right: 1px solid var(--border); }
+  .tl-phase.done { background: var(--green-bg); border-top: 2px solid var(--green); }
+  .tl-phase.active { background: var(--blue-light); border-top: 2px solid var(--blue); }
+  .tl-phase.pending { background: var(--surface); border-top: 2px solid var(--border); }
+  .tl-num {
+    font-size: 7pt;
+    font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 2px;
+  }
+  .tl-phase.done .tl-num { color: var(--green); }
+  .tl-phase.active .tl-num { color: var(--blue); }
+  .tl-phase.pending .tl-num { color: var(--text-light); }
+  .tl-phase-title { font-weight: 600; font-size: 7.5pt; color: var(--text); margin-bottom: 1px; }
+  .tl-phase-date { font-size: 7pt; color: var(--text-light); font-family: 'IBM Plex Mono', monospace; margin-bottom: 3px; }
+  .tl-phase-desc { font-size: 7pt; color: var(--text-muted); line-height: 1.45; }
+
+  /* ── OUTREACH FLOW ── */
+  .flow-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .flow-step {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 7px 8px;
+    text-align: center;
+    border-radius: 3px;
+  }
+  .flow-arrow {
+    color: var(--text-light);
+    font-size: 10pt;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  .flow-day {
+    font-size: 7pt;
+    font-weight: 600;
+    color: var(--blue);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 2px;
+  }
+  .flow-title { font-size: 7.5pt; font-weight: 600; color: var(--text); margin-bottom: 1px; }
+  .flow-desc { font-size: 6.5pt; color: var(--text-light); line-height: 1.4; }
+  .flow-step.escalation { background: var(--red-bg); border-color: #f0b8bb; }
+  .flow-step.escalation .flow-day { color: var(--red); }
+
+  /* ── PLAYBOOK STEPS ── */
+  .pb-step {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+  .pb-step:last-child { border-bottom: none; }
+  .pb-num {
+    width: 18px;
+    height: 18px;
+    background: var(--blue);
+    color: #fff;
+    border-radius: 3px;
+    font-size: 7.5pt;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .pb-title { font-weight: 600; font-size: 8.5pt; color: var(--text); }
+  .pb-desc { font-size: 8pt; color: var(--text-muted); margin-top: 1px; }
+
+  /* ── TWO-COL ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* ── FOOTER ── */
+  .doc-footer {
+    position: absolute;
+    bottom: 12mm;
+    left: 20mm;
+    right: 20mm;
+    border-top: 1px solid var(--border);
+    padding-top: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-left { font-size: 7pt; color: var(--text-light); font-family: 'IBM Plex Mono', monospace; }
+  .footer-right { font-size: 7pt; color: var(--text-light); font-family: 'IBM Plex Mono', monospace; }
+  .footer-center { font-size: 7pt; color: var(--text-light); font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: white; }
+    .page {
+      width: 100%;
+      margin: 0;
+      padding: 15mm 18mm 20mm 18mm;
+      box-shadow: none;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: avoid; }
+    @page { size: A4; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 1
+═══════════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- Header -->
+  <div class="doc-header">
+    <div class="doc-header-top">
+      <div>
+        <div class="doc-service">Azure Synapse Analytics → Microsoft Fabric</div>
+        <div class="doc-title">Deprecation Program: Migration Status Report</div>
+        <div class="doc-subtitle">Azure Data Engineering · Migration Program Office</div>
+      </div>
+      <div class="doc-meta">
+        <div class="doc-meta-date">June 2025 · Report Period: Jun 1–15</div>
+        <span class="status-badge">● Active</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Executive Summary -->
+  <div class="section">
+    <div class="section-label">Executive Summary</div>
+    <div class="exec-summary">
+      The program has achieved <strong>42.3% migration completion</strong> (1,203 of 2,847 tenants) as of the June 15 reporting date, with the Enterprise tier leading at 78% and Dev/Test significantly lagging at 18%. <strong>341 tenants are classified as At Risk</strong>, carrying active Synapse workloads with fewer than 30 days to the read-only phase transition. The program is currently in <strong>Phase 3 (Active Migration Window)</strong>; coordinated outreach is underway with focus on centralindia and brazilsouth regions, which remain most critically behind schedule.
+    </div>
+  </div>
+
+  <!-- KPI Summary -->
+  <div class="section">
+    <div class="section-label">Program KPIs — as of 15 June 2025</div>
+    <div class="kpi-bar">
+      <div class="kpi-item">
+        <div class="kpi-val" style="color:var(--blue)">2,847</div>
+        <div class="kpi-lbl">Total Tenants</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-val" style="color:var(--green)">1,203</div>
+        <div class="kpi-lbl">Migrated (42.3%)</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-val" style="color:var(--red)">341</div>
+        <div class="kpi-lbl">At Risk</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-val" style="color:#7a5c0a">618</div>
+        <div class="kpi-lbl">Uncontacted</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-val" style="color:var(--text)">47</div>
+        <div class="kpi-lbl">Avg Days to EOL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Migration by Tier + Region side by side -->
+  <div class="two-col">
+
+    <!-- Tier bars -->
+    <div class="section" style="margin-bottom:0">
+      <div class="section-label">Migration Progress by Subscription Tier</div>
+      <div class="tier-table">
+        <div class="tier-row">
+          <span class="tier-name">Enterprise</span>
+          <div class="tier-track">
+            <div class="tier-fill" style="width:78%;background:#107c10">
+              <span class="tier-pct">78%</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-row">
+          <span class="tier-name">Premium</span>
+          <div class="tier-track">
+            <div class="tier-fill" style="width:54%;background:#0078d4">
+              <span class="tier-pct">54%</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-row">
+          <span class="tier-name">Standard</span>
+          <div class="tier-track">
+            <div class="tier-fill" style="width:31%;background:#b45309">
+              <span class="tier-pct">31%</span>
+            </div>
+          </div>
+        </div>
+        <div class="tier-row">
+          <span class="tier-name">Dev/Test</span>
+          <div class="tier-track">
+            <div class="tier-fill" style="width:18%;background:#a4262c">
+              <span class="tier-pct">18%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:7.5pt;color:var(--text-light);margin-top:6px;font-style:italic">
+        Enterprise tier has received dedicated FastTrack engineering support since Phase 2. Dev/Test tier outreach begins this week.
+      </div>
+    </div>
+
+    <!-- Region table -->
+    <div class="section" style="margin-bottom:0">
+      <div class="section-label">Region Breakdown</div>
+      <table class="data-table">
+        <thead>
+          <tr><th>Region</th><th>Tenants</th><th>Migrated</th><th>At Risk</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">eastus</td><td>812</td><td>431</td><td>78</td>
+            <td><span class="badge-sm badge-yellow">On Track</span></td>
+          </tr>
+          <tr>
+            <td class="mono">westeurope</td><td>634</td><td>390</td><td>21</td>
+            <td><span class="badge-sm badge-green">Healthy</span></td>
+          </tr>
+          <tr>
+            <td class="mono">southeastasia</td><td>489</td><td>178</td><td>112</td>
+            <td><span class="badge-sm badge-red">At Risk</span></td>
+          </tr>
+          <tr>
+            <td class="mono">centralindia</td><td>401</td><td>121</td><td>98</td>
+            <td><span class="badge-sm badge-red">At Risk</span></td>
+          </tr>
+          <tr>
+            <td class="mono">northeurope</td><td>311</td><td>83</td><td>32</td>
+            <td><span class="badge-sm badge-yellow">Lagging</span></td>
+          </tr>
+          <tr>
+            <td class="mono">brazilsouth</td><td>200</td><td>0</td><td>200</td>
+            <td><span class="badge-sm badge-red">Not Started</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="doc-footer">
+    <div class="footer-left">Azure Data Engineering · Migration Program Office</div>
+    <div class="footer-center">CONFIDENTIAL — INTERNAL USE ONLY</div>
+    <div class="footer-right">Page 1 of 2</div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 2
+═══════════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- Page 2 header -->
+  <div class="page2-header">
+    <div>
+      <div class="page2-title">Azure Synapse → Fabric · Migration Status Report</div>
+      <div class="page2-sub">Program Details — June 2025</div>
+    </div>
+    <div class="page2-sub">Confidential · Internal</div>
+  </div>
+
+  <!-- Deprecation Timeline -->
+  <div class="section">
+    <div class="section-label">Deprecation Timeline — Phase Status</div>
+    <div class="timeline-wrap">
+      <div class="tl-phase done">
+        <div class="tl-num">PH 1 ✓</div>
+        <div class="tl-phase-title">Announcement</div>
+        <div class="tl-phase-date">Sep 1, 2024</div>
+        <div class="tl-phase-desc">EOL announced. New workspace creation disabled.</div>
+      </div>
+      <div class="tl-phase done">
+        <div class="tl-num">PH 2 ✓</div>
+        <div class="tl-phase-title">Feature Freeze</div>
+        <div class="tl-phase-date">Jan 15, 2025</div>
+        <div class="tl-phase-desc">No new investments. Enterprise outreach launched.</div>
+      </div>
+      <div class="tl-phase active">
+        <div class="tl-num">PH 3 ◉ NOW</div>
+        <div class="tl-phase-title">Migration Window</div>
+        <div class="tl-phase-date">Jun 30, 2025</div>
+        <div class="tl-phase-desc">Tooling available. Bulk outreach active.</div>
+      </div>
+      <div class="tl-phase pending">
+        <div class="tl-num">PH 4</div>
+        <div class="tl-phase-title">Read-Only Mode</div>
+        <div class="tl-phase-date">Sep 30, 2025</div>
+        <div class="tl-phase-desc">Workspaces read-only. Pipelines stop.</div>
+      </div>
+      <div class="tl-phase pending">
+        <div class="tl-num">PH 5</div>
+        <div class="tl-phase-title">Full Disablement</div>
+        <div class="tl-phase-date">Dec 31, 2025</div>
+        <div class="tl-phase-desc">Service off. 90-day export window.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top At-Risk Tenants -->
+  <div class="section">
+    <div class="section-label">Top At-Risk Tenants — by Urgency (Active Synapse Load + Days to EOL)</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Tenant ID</th><th>Organisation</th><th>Region</th><th>API Calls/Day</th><th>Migration %</th><th>Days to EOL</th><th>Contact Status</th><th>Urgency</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">t_0091g</td><td>Mphasis Corp</td><td class="mono">brazilsouth</td><td class="mono">211</td>
+          <td class="mono">0%</td><td class="mono" style="color:var(--red);font-weight:600">8</td>
+          <td><span class="badge-sm badge-red">No Response</span></td>
+          <td><span class="badge-sm badge-red">CRITICAL</span></td>
+        </tr>
+        <tr>
+          <td class="mono">t_1122b</td><td>HCL Technologies</td><td class="mono">centralindia</td><td class="mono">741</td>
+          <td class="mono">2%</td><td class="mono" style="color:var(--red);font-weight:600">11</td>
+          <td><span class="badge-sm badge-red">No Response</span></td>
+          <td><span class="badge-sm badge-red">CRITICAL</span></td>
+        </tr>
+        <tr>
+          <td class="mono">t_8821a</td><td>Infosys Ltd.</td><td class="mono">centralindia</td><td class="mono">2,841</td>
+          <td class="mono">5%</td><td class="mono" style="color:var(--red);font-weight:600">16</td>
+          <td><span class="badge-sm badge-red">No Response</span></td>
+          <td><span class="badge-sm badge-red">CRITICAL</span></td>
+        </tr>
+        <tr>
+          <td class="mono">t_3304f</td><td>TCS Digital</td><td class="mono">southeastasia</td><td class="mono">1,233</td>
+          <td class="mono">30%</td><td class="mono" style="color:#7a5c0a;font-weight:600">22</td>
+          <td><span class="badge-sm badge-yellow">Acknowledged</span></td>
+          <td><span class="badge-sm badge-yellow">HIGH</span></td>
+        </tr>
+        <tr>
+          <td class="mono">t_7723e</td><td>Tech Mahindra</td><td class="mono">northeurope</td><td class="mono">398</td>
+          <td class="mono">20%</td><td class="mono" style="color:#7a5c0a;font-weight:600">29</td>
+          <td><span class="badge-sm badge-yellow">Acknowledged</span></td>
+          <td><span class="badge-sm badge-yellow">HIGH</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Outreach Cadence + Playbook side by side -->
+  <div class="two-col">
+
+    <div class="section" style="margin-bottom:0">
+      <div class="section-label">Outreach Cadence — 4-Touchpoint Communication Flow</div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <div class="flow-wrap">
+          <div class="flow-step">
+            <div class="flow-day">Day 0</div>
+            <div class="flow-title">Initial Notice</div>
+            <div class="flow-desc">Email with tenant-specific usage data, EOL date, Fabric guide</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="flow-day">Day 3</div>
+            <div class="flow-title">Follow-up</div>
+            <div class="flow-desc">Second email + portal banner if no response received</div>
+          </div>
+        </div>
+        <div class="flow-wrap">
+          <div class="flow-step">
+            <div class="flow-day">Day 7</div>
+            <div class="flow-title">Account Escalation</div>
+            <div class="flow-desc">Route to CSM / account team for direct engagement</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="flow-day">Day 12</div>
+            <div class="flow-title">Final Warning</div>
+            <div class="flow-desc">Portal banner + final email with service disruption warning</div>
+          </div>
+        </div>
+        <div class="flow-wrap">
+          <div class="flow-step escalation" style="width:100%">
+            <div class="flow-day">D-7 to EOL</div>
+            <div class="flow-title">Mandatory Escalation</div>
+            <div class="flow-desc">If still unresponsive — flag for emergency escalation workflow, VP visibility</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-bottom:0">
+      <div class="section-label">Migration Playbook — 6-Step Process</div>
+      <div>
+        <div class="pb-step">
+          <div class="pb-num">1</div>
+          <div>
+            <div class="pb-title">Telemetry Pull</div>
+            <div class="pb-desc">Daily KQL query via Azure Monitor — identify active Synapse API users</div>
+          </div>
+        </div>
+        <div class="pb-step">
+          <div class="pb-num">2</div>
+          <div>
+            <div class="pb-title">Urgency Segmentation</div>
+            <div class="pb-desc">SQL-based triage into CRITICAL / HIGH / MEDIUM / LOW by EOL proximity</div>
+          </div>
+        </div>
+        <div class="pb-step">
+          <div class="pb-num">3</div>
+          <div>
+            <div class="pb-title">Personalised First Contact</div>
+            <div class="pb-desc">Outreach references tenant-specific API/pipeline data — not generic</div>
+          </div>
+        </div>
+        <div class="pb-step">
+          <div class="pb-num">4</div>
+          <div>
+            <div class="pb-title">Follow-up Cadence</div>
+            <div class="pb-desc">Structured 4-touchpoint sequence tracked in CRM with SLA targets</div>
+          </div>
+        </div>
+        <div class="pb-step">
+          <div class="pb-num">5</div>
+          <div>
+            <div class="pb-title">Migration Validation</div>
+            <div class="pb-desc">Telemetry confirms Synapse calls → 0 and Fabric calls ↑ for 3 days</div>
+          </div>
+        </div>
+        <div class="pb-step">
+          <div class="pb-num">6</div>
+          <div>
+            <div class="pb-title">Post-Migration Support</div>
+            <div class="pb-desc">30-day FastTrack engineer availability; regression monitoring active</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="doc-footer">
+    <div class="footer-left">Azure Data Engineering · Migration Program Office</div>
+    <div class="footer-center">CONFIDENTIAL — INTERNAL USE ONLY</div>
+    <div class="footer-right">Page 2 of 2</div>
+  </div>
+
+</div>
+
+</body>
+</html>
