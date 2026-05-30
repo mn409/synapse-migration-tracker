@@ -4,7 +4,7 @@ A product management tool for tracking, prioritising, and managing customer migr
 
 Built to demonstrate end-to-end PM thinking on a real Microsoft deprecation scenario — from telemetry-based identification to structured outreach to playbook execution.
 
-**Live demo:** [your-github-pages-url-here]
+**Live demo:** [https://mn409.github.io/synapse-migration-tracker/]
 
 ---
 
